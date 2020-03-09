@@ -5,19 +5,22 @@
 
 void triangular(double* x, double* y);
 void stfTriangular(double* x, double* y,int n);
+void reducirError(double* x,double* yreal, double* yserie);
 
-double T = 5; //Periodo de la funcion
-double ciclos = 10; //ciclos totales de la función
-double puntos = 1000; //puntos de la función
+double T = 15; //Periodo de la funcion
+double ciclos = 20; //ciclos totales de la función
+double puntos = 500; //puntos de la función
 
 double PI = 3.14159265;
 
+float ecm = 0.001; //Error cuadratico medio
+
 int main(int argc, char* argv[]){
 
-	double abscisas[(int)puntos];
-	double ordenadas[(int)puntos];
+	double abscisas[(int)puntos]; //abscisas de la funcion
+	double ordenadas[(int)puntos]; //ordenadas de la funcion
 
-	double stfx[(int)puntos]; //abscisas de la STF
+	//no se crean abscisas para la STF ya que son las mismas
 	double stfy[(int)puntos]; //ordenadas de la STF
 
 	int i;
@@ -25,8 +28,10 @@ int main(int argc, char* argv[]){
 
 	FILE* archivo=NULL;
 
+	//Se calculan los valores REALES de la funcion
 	triangular(abscisas,ordenadas);
-	stfTriangular(stfx,stfy,1000);
+
+	reducirError(abscisas,ordenadas,stfy);
 
 	if((archivo=fopen("plotear.txt","w")) == NULL){
 		printf("Error abriendo el archivo");
@@ -34,7 +39,7 @@ int main(int argc, char* argv[]){
 	}
 
 	for(i=0;i<puntos;i++){
-		fprintf(archivo,"%lf\t%lf\n",stfx[i],stfy[i]);
+		fprintf(archivo,"%lf\t%lf\n",abscisas[i],stfy[i]);
 	}
 
 	fclose(archivo);
@@ -75,11 +80,6 @@ void stfTriangular(double* x, double* y, int n){
 	double an=0; // An de la STF
 	double p=0; //parametro de coseno
 
-	//Llenamos al arreglo de abscisas de puntos
-        for(i=0;i<puntos;i++){
-                *(x+i) = (i*ciclos*T)/puntos; // ciclos*periodo/puntos
-        }
-
 	for(i=0; i<puntos; i++){
 		for(j=1;j<= n;j++){
 			if((int)j % 2 == 0){
@@ -96,4 +96,26 @@ void stfTriangular(double* x, double* y, int n){
 		aux = 0;
 	}
 
+}
+
+
+void reducirError(double* x,double* yreal, double* yserie){
+
+	double error = 0;
+	int n =1; //'n' para la sumatoria de la STF
+	int i = 0;
+
+	do{
+		stfTriangular(x,yserie,n);
+		error = 0;
+		for(i = 1; i <= puntos ; i++){
+			error += (*(yserie+i)-*(yreal+i))*(*(yserie+i)-*(yreal+i));
+		}
+		error = error/puntos;
+		n++; //Si no baja de 0.01 se calculan mas terminos para STF
+
+	}while(error >=  ecm);
+
+	printf("\nSe redujo el error cuadratico medio a menos de %lf con:\n",ecm);
+	printf("\nn = %d\n",n);
 }
