@@ -8,12 +8,12 @@ void stfTriangular(double* x, double* y,int n);
 void reducirError(double* x,double* yreal, double* yserie);
 
 double T = 15; //Periodo de la funcion
-double ciclos = 20; //ciclos totales de la función
-double puntos = 500; //puntos de la función
+double ciclos = 10; //ciclos totales de la función
+double puntos = 1000; //puntos de la función
 
 double PI = 3.14159265;
 
-float ecm = 0.001; //Error cuadratico medio
+float ecm = 0.01; //Error cuadratico medio
 
 int main(int argc, char* argv[]){
 
@@ -26,23 +26,35 @@ int main(int argc, char* argv[]){
 	int i;
 
 
-	FILE* archivo=NULL;
+	FILE* funcion = NULL; // Archivo para la funcion definida
+	FILE* stf = NULL; //Archivo para la funcion por STF
 
 	//Se calculan los valores REALES de la funcion
 	triangular(abscisas,ordenadas);
 
 	reducirError(abscisas,ordenadas,stfy);
 
-	if((archivo=fopen("plotear.txt","w")) == NULL){
+	if((stf=fopen("stf.txt","w")) == NULL){
 		printf("Error abriendo el archivo");
 		exit(0);
 	}
 
+	if((funcion=fopen("normal.txt","w")) == NULL){
+                printf("Error abriendo el archivo");
+                exit(0);
+        }
+
 	for(i=0;i<puntos;i++){
-		fprintf(archivo,"%lf\t%lf\n",abscisas[i],stfy[i]);
+		fprintf(funcion,"%lf\t%lf\n",abscisas[i],ordenadas[i]);
+		fprintf(stf,"%lf\t%lf\n",abscisas[i],stfy[i]);
 	}
 
-	fclose(archivo);
+	fclose(funcion);
+	fclose(stf);
+
+	//Se llama a GNUplot mediante system
+	//*Ya se tiene un script para plotear los resultados
+	system("gnuplot -p scriptGnuPlot.p");
 	return(0);
 }
 
