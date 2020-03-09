@@ -1,22 +1,32 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
-void triangular(float* x, float* y);
 
-float T = 5; //Periodo de la funcion
-float ciclos = 10; //ciclos totales de la función
-float puntos = 1000; //puntos de la función
+void triangular(double* x, double* y);
+void stfTriangular(double* x, double* y,int n);
 
-int main(float argc, float* argv[]){
+double T = 5; //Periodo de la funcion
+double ciclos = 10; //ciclos totales de la función
+double puntos = 1000; //puntos de la función
 
-	float abscisas[(int)puntos];
-	float ordenadas[(int)puntos];
+double PI = 3.14159265;
+
+int main(int argc, char* argv[]){
+
+	double abscisas[(int)puntos];
+	double ordenadas[(int)puntos];
+
+	double stfx[(int)puntos]; //abscisas de la STF
+	double stfy[(int)puntos]; //ordenadas de la STF
 
 	int i;
+
 
 	FILE* archivo=NULL;
 
 	triangular(abscisas,ordenadas);
+	stfTriangular(stfx,stfy,1000);
 
 	if((archivo=fopen("plotear.txt","w")) == NULL){
 		printf("Error abriendo el archivo");
@@ -24,14 +34,14 @@ int main(float argc, float* argv[]){
 	}
 
 	for(i=0;i<puntos;i++){
-		fprintf(archivo,"%.2f\t%.2f\n",abscisas[i],ordenadas[i]);
+		fprintf(archivo,"%lf\t%lf\n",stfx[i],stfy[i]);
 	}
 
 	fclose(archivo);
 	return(0);
 }
 
-void triangular(float* x,float* y){
+void triangular(double* x,double* y){
 
 	int i;
 	int k;
@@ -52,6 +62,38 @@ void triangular(float* x,float* y){
 				*(y+i) = ((-2/T)*(*(x+i)-(k*T)))+1;
 			}
 		}
+	}
+
+}
+
+void stfTriangular(double* x, double* y, int n){
+
+	int i;
+	double j;
+	double aux = 0; //acumular resultado de la STF
+
+	double an=0; // An de la STF
+	double p=0; //parametro de coseno
+
+	//Llenamos al arreglo de abscisas de puntos
+        for(i=0;i<puntos;i++){
+                *(x+i) = (i*ciclos*T)/puntos; // ciclos*periodo/puntos
+        }
+
+	for(i=0; i<puntos; i++){
+		for(j=1;j<= n;j++){
+			if((int)j % 2 == 0){
+				an = 0;
+			}else{
+				an = -4/(j*j*PI*PI);
+			}
+
+			p = (*(x+i)*2*PI*j)/T;
+			aux += an*( cos(p));
+
+		}
+		*(y+i) = aux-0.5;
+		aux = 0;
 	}
 
 }
