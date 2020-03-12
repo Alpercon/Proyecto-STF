@@ -128,6 +128,6 @@ void reducirError(double* x,double* yreal, double* yserie){
 
 	}while(error >=  ecm);
 
-	printf("\nSe redujo el error cuadratico medio a menos de %lf con:\n",ecm);
-	printf("\nn = %d\n",n);
+	printf("\nSe obtuvo un ECM de %lf con %d armonicos:\n",error,n);
+	//printf("\nn = %d armonicos\n",n);
 }
